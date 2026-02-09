@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import User from "../models/user.model";
+import Registration from "../models/registration.model";
 
 export const createUser = async (
     req: Request,
@@ -74,7 +75,11 @@ export const deleteUser = async (
         if (!deleted) {
             return res.status(404).json({ message: "User not found" });
         }
-        res.json({ message: "User deleted successfully" });
+
+        // Remove any registrations belonging to this user
+        await Registration.deleteMany({ user: deleted._id });
+
+        res.json({ message: "User and related registrations deleted successfully" });
     } catch (error) {
         next(error);
     }
