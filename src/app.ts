@@ -3,6 +3,7 @@ import userRoutes from "./routes/user.routes";
 import errorHandler from "./middlewares/error.middleware";
 import adminRoutes from "./routes/admin.routes";
 import eventRoutes from "./routes/event.routes";
+import registrationRoutes from "./routes/registration.routes";
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.get("/", (req, res) => {
 app.use("/api/users", userRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/admins", adminRoutes);
+app.use("/api/register", registrationRoutes);
 app.use(errorHandler);
 
 export default app;
