@@ -16,6 +16,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/users", userRoutes);
+app.use("/api/events", userRoutes);
 app.use(errorHandler);
 
 export default app;
