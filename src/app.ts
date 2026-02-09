@@ -1,6 +1,7 @@
 import express from "express";
 import userRoutes from "./routes/user.routes";
 import errorHandler from "./middlewares/error.middleware";
+import eventRoutes from "./routes/event.routes";
 
 const app = express();
 
@@ -16,7 +17,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/users", userRoutes);
-app.use("/api/events", userRoutes);
+app.use("/api/events", eventRoutes);
 app.use(errorHandler);
 
 export default app;
