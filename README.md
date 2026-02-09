@@ -36,6 +36,7 @@ ts-crud-apis/
 │   │   └── user.controller.ts
 │   ├── models/          # Mongoose schemas
 │   │   └── user.model.ts
+            admin.model.ts
 │   ├── routes/          # API routes
 │   │   └── user.routes.ts
 │   ├── middlewares/     # Custom middlewares
