@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import User from "../models/user.model";
+import Registration from "../models/registration.model";
 
 export const createUser = async (
     req: Request,
@@ -55,7 +56,10 @@ export const updateUser = async (
             req.body,
             { new: true, runValidators: true }
         );
-        res.json(user);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.json({ message: "User updated successfully", user });
     } catch (error) {
         next(error);
     }
@@ -67,8 +71,15 @@ export const deleteUser = async (
     next: NextFunction
 ) => {
     try {
-        await User.findByIdAndDelete(req.params.id);
-        res.status(204).send();
+        const deleted = await User.findByIdAndDelete(req.params.id);
+        if (!deleted) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Remove any registrations belonging to this user
+        await Registration.deleteMany({ user: deleted._id });
+
+        res.json({ message: "User and related registrations deleted successfully" });
     } catch (error) {
         next(error);
     }
