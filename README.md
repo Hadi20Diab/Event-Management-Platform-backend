@@ -107,6 +107,30 @@ Base URL: `http://localhost:3000/api/users`
 
 ---
 
+## Event Model & API Documentation
+
+**Fields:**
+- `title`, `description`, `date`, `location`, `tags`, `status`, `capacity`
+- `status`: `scheduled` | `cancelled` | `completed`
+- `tags`: array of strings
+- `capacity`: number (optional)
+
+**Endpoints:**
+- `POST /events` – Create event
+- `GET /events` – List events (filter, sort, paginate)
+- `GET /events/:id` – Get event by ID
+- `PUT /events/:id` – Update event
+- `DELETE /events/:id` – Delete event
+
+**Features:**
+- Filtering: `date`, `location`, `status`, `tags`
+- Sorting: by any field (use `?sort=field`)
+- Pagination: `?page=1&limit=10`
+- Validation: express-validator
+- Error handling: returns 400 for validation, 404 for not found
+
+---
+
 ## Error Handling
 
 All errors are handled by a global error middleware:

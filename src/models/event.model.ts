@@ -5,6 +5,8 @@ export interface EventDocument extends Document {
   description: string;
   date: Date;
   location: string;
+  status?: "scheduled" | "cancelled" | "completed";
+  capacity?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -15,6 +17,8 @@ const EventSchema = new Schema<EventDocument>(
     description: { type: String, required: true },
     date: { type: Date, required: true },
     location: { type: String, required: true },
+    status: { type: String, enum: ["scheduled", "cancelled", "completed"], default: "scheduled" },
+    capacity: { type: Number },
   },
   { timestamps: true }
 );
