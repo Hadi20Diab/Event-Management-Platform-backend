@@ -31,11 +31,24 @@ export const registerUserForEvent = async (req: Request, res: Response, next: Ne
 
 export const getRegistrationsByUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const userId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+        const userId = String(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id);
         if (!Types.ObjectId.isValid(userId)) return res.status(400).json({ message: "Invalid user id" });
 
         const regs = await Registration.find({ user: userId }).populate("event").populate("user");
         res.json(regs);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getRegistrationById = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const regId = String(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id);
+        if (!Types.ObjectId.isValid(regId)) return res.status(400).json({ message: "Invalid registration id" });
+
+        const reg = await Registration.findById(regId).populate("event").populate("user");
+        if (!reg) return res.status(404).json({ message: "Registration not found" });
+        res.json(reg);
     } catch (error) {
         next(error);
     }
