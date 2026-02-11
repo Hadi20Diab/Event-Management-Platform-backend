@@ -1,4 +1,4 @@
-import { Router, Request, Response, NextFunction } from "express";
+import { Router } from "express";
 import {
   createEvent,
   getEvents,
@@ -7,22 +7,14 @@ import {
   deleteEvent
 } from "../controllers/event.controller";
 import { eventValidationRules } from "../middlewares/event.validation";
-import { validationResult } from "express-validator";
+import validateRequest from "../middlewares/validateRequest";
 
 const router = Router();
 
-function validate(req: Request, res: Response, next: NextFunction) {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-  next();
-}
-
-router.post("/", eventValidationRules.create, validate, createEvent);
-router.get("/", eventValidationRules.get, validate, getEvents);
-router.get("/:id", eventValidationRules.id, validate, getEventById);
-router.put("/:id", eventValidationRules.update, eventValidationRules.id, validate, updateEvent);
-router.delete("/:id", eventValidationRules.id, validate, deleteEvent);
+router.post("/", eventValidationRules.create, validateRequest, createEvent);
+router.get("/", eventValidationRules.get, validateRequest, getEvents);
+router.get("/:id", eventValidationRules.id, validateRequest, getEventById);
+router.put("/:id", eventValidationRules.update, eventValidationRules.id, validateRequest, updateEvent);
+router.delete("/:id", eventValidationRules.id, validateRequest, deleteEvent);
 
 export default router;
