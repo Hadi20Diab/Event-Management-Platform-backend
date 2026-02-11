@@ -1,4 +1,3 @@
-// src/validators/admin.validator.ts
 import { body, param } from "express-validator";
 
 export const idValidator = [
@@ -11,6 +10,10 @@ export const createAdminValidator = [
   body("email").isEmail().withMessage("Valid email is required"),
 
   body("phone").notEmpty().withMessage("Phone number is required"),
+
+  body("password")
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters"),
 
   body("role")
     .isIn(["admin", "superAdmin"])

@@ -12,13 +12,32 @@ import {
   updateAdminValidator,
   idValidator,
 } from "../validators/admin.validator";
+import { protect, adminOnly } from "../middlewares/auth.middleware";
 
 const router = Router();
 
-router.post("/", createAdminValidator, validate, createAdmin);
-router.get("/", getAdmins);
-router.get("/:id", idValidator, validate, getAdminById);
-router.put("/:id", updateAdminValidator, validate, updateAdmin);
-router.delete("/:id", idValidator, validate, deleteAdmin);
+router.post(
+  "/",
+  protect,
+  adminOnly,
+  createAdminValidator,
+  validate,
+  createAdmin,
+);
+
+router.get("/", protect, adminOnly, getAdmins);
+
+router.get("/:id", protect, adminOnly, idValidator, validate, getAdminById);
+
+router.put(
+  "/:id",
+  protect,
+  adminOnly,
+  updateAdminValidator,
+  validate,
+  updateAdmin,
+);
+
+router.delete("/:id", protect, adminOnly, idValidator, validate, deleteAdmin);
 
 export default router;

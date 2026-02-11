@@ -4,6 +4,7 @@ export interface IAdmin extends Document {
   name: string;
   email: string;
   phone: string;
+  password: string;
   role: "admin" | "superAdmin";
 }
 
@@ -19,6 +20,13 @@ const adminSchema = new Schema<IAdmin>(
       match: [/^\S+@\S+\.\S+$/, "Invalid email format"],
     },
     phone: { type: String, required: true, unique: true, trim: true },
+    password: {
+      type: String,
+      required: true,
+      minlength: 6,
+      select: false,
+    },
+
     role: {
       type: String,
       required: true,

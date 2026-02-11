@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import bcrypt from "bcryptjs";
 import { query } from "express-validator";
 
 import Admin from "../models/admin.model";
@@ -9,7 +10,15 @@ export const createAdmin = async (
   next: NextFunction,
 ) => {
   try {
-    const admin = await Admin.create(req.body);
+    const { name, email, phone, password, role } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const admin = await Admin.create({
+      name,
+      email,
+      phone,
+      password: hashedPassword,
+      role,
+    });
     res.status(201).json({
       message: `${admin.name} account created successfully!`,
       admin,
@@ -100,10 +109,16 @@ export const updateAdmin = async (
   next: NextFunction,
 ) => {
   try {
-    const admin = await Admin.findByIdAndUpdate(req.params.id, req.body, {
+    const updates: any = { ...req.body };
+
+    if (updates.password) {
+      updates.password = await bcrypt.hash(updates.password, 10);
+    }
+
+    const admin = await Admin.findByIdAndUpdate(req.params.id, updates, {
       new: true,
       runValidators: true,
-    });
+    }).select("-password");
     if (!admin) {
       return res.status(404).json({
         message: "Admin not found",
@@ -126,7 +141,7 @@ export const deleteAdmin = async (
 ) => {
   try {
     const admin = await Admin.findByIdAndDelete(req.params.id);
-     if (!admin) {
+    if (!admin) {
       return res.status(404).json({ message: "Admin not found" });
     }
     res.status(404).json({
