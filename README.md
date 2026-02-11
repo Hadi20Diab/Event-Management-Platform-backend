@@ -33,16 +33,27 @@ ts-crud-apis/
 │   ├── config/          # Database connection
 │   │   └── db.ts
 │   ├── controllers/     # Business logic
-│   │   └── user.controller.ts
+│   │   ├── user.controller.ts
+│   │   ├── event.controller.ts
+│   │   ├── registration.controller.ts
+│   │   └── admin.controller.ts
 │   ├── models/          # Mongoose schemas
-│   │   └── user.model.ts
-            admin.model.ts
+│   │   ├── user.model.ts
+│   │   ├── event.model.ts
+│   │   ├── registration.model.ts
+│   │   └── admin.model.ts
 │   ├── routes/          # API routes
-│   │   └── user.routes.ts
+│   │   ├── user.routes.ts
+│   │   ├── event.routes.ts
+│   │   ├── registration.routes.ts
+│   │   └── admin.routes.ts
 │   ├── middlewares/     # Custom middlewares
 │   │   ├── error.middleware.ts
 │   ├── app.ts           # Express app setup
 │   └── server.ts        # Server bootstrap
+├── docs/                # API documentation
+│   ├── README.md        # Main documentation index
+│   └── registration.md  # Registration routes documentation
 ├── .env                 # Environment variables
 ├── tsconfig.json
 ├── package.json
@@ -93,8 +104,18 @@ MONGO_URI=YOUR_MONGO_URI
 
 ---
 
+## API Documentation
+
+For detailed API documentation, see the [docs folder](./docs/README.md). The documentation includes:
+
+- Registration routes with filtering, sorting, and pagination
+- Event management endpoints
+- User management endpoints
+- Administrative functions
+
 ## API Endpoints
 
+### Users
 Base URL: `http://localhost:3000/api/users`
 
 | Method | Endpoint | Description    |
@@ -104,6 +125,27 @@ Base URL: `http://localhost:3000/api/users`
 |    GET | `/:id`   | Get user by ID |
 |    PUT | `/:id`   | Update user    |
 | DELETE | `/:id`   | Delete user    |
+
+### Events
+Base URL: `http://localhost:3000/api/events`
+
+| Method | Endpoint | Description |
+| -----: | -------- | ----------- |
+|   POST | `/`      | Create event |
+|    GET | `/`      | List events (with filtering, sorting, pagination) |
+|    GET | `/:id`   | Get event by ID |
+|    PUT | `/:id`   | Update event |
+| DELETE | `/:id`   | Delete event |
+
+### Registrations
+Base URL: `http://localhost:3000/api/registrations`
+
+| Method | Endpoint | Description |
+| -----: | -------- | ----------- |
+|   POST | `/` | Register user for event |
+|    GET | `/user/:id` | Get user registrations (with filtering, sorting, pagination) |
+|    GET | `/:id` | Get registration by ID |
+| DELETE | `/:id` | Cancel registration |
 
 ---
 
