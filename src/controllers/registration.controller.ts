@@ -53,3 +53,17 @@ export const getRegistrationById = async (req: Request, res: Response, next: Nex
         next(error);
     }
 };
+
+export const cancelRegistration = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const regId = String(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id);
+        if (!Types.ObjectId.isValid(regId)) return res.status(400).json({ message: "Invalid registration id" });
+
+        const reg = await Registration.findByIdAndDelete(regId);
+        if (!reg) return res.status(404).json({ message: "Registration not found" });
+        
+        res.json({ message: "Registration cancelled successfully" });
+    } catch (error) {
+        next(error);
+    }
+};
