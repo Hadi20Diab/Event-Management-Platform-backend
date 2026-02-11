@@ -1,4 +1,6 @@
 import { Request, Response, NextFunction } from "express";
+import { query } from "express-validator";
+
 import Admin from "../models/admin.model";
 
 export const createAdmin = async (
@@ -24,8 +26,48 @@ export const getAdmins = async (
   next: NextFunction,
 ) => {
   try {
-    const admins = await Admin.find();
-    res.json(admins);
+    const {
+      page = "1",
+      limit = "10",
+      sort = "createdAt",
+      order = "desc",
+      ...filters
+    } = req.query as Record<string, string>;
+
+    // Allowed filter fields
+    const allowedFilters = ["role", "email", "name"];
+
+    const query = Object.keys(filters)
+      .filter((key) => allowedFilters.includes(key))
+      .reduce((obj: any, key) => {
+        obj[key] = filters[key];
+        return obj;
+      }, {});
+
+    // Pagination
+    const pageNumber = parseInt(page);
+    const limitNumber = parseInt(limit);
+    const skip = (pageNumber - 1) * limitNumber;
+
+    // Sorting
+    const sortOption: any = {
+      [sort]: order === "asc" ? 1 : -1,
+    };
+
+    // Execute query
+    const admins = await Admin.find(query)
+      .sort(sortOption)
+      .skip(skip)
+      .limit(limitNumber);
+
+    const total = await Admin.countDocuments(query);
+
+    res.json({
+      total,
+      page: pageNumber,
+      pages: Math.ceil(total / limitNumber),
+      results: admins,
+    });
   } catch (error) {
     next(error);
   }
@@ -83,9 +125,12 @@ export const deleteAdmin = async (
   next: NextFunction,
 ) => {
   try {
-    await Admin.findByIdAndDelete(req.params.id);
-    res.status(204).send().json({
-      message: `Admin is deleted successfully!`,
+    const admin = await Admin.findByIdAndDelete(req.params.id);
+     if (!admin) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+    res.status(404).json({
+      message: "Admin is deleted successfully!",
     });
     console.log("Admin is deleted successfully!");
   } catch (error) {
