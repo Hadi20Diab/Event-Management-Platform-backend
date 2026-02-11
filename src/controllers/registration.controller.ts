@@ -34,8 +34,49 @@ export const getRegistrationsByUser = async (req: Request, res: Response, next: 
         const userId = String(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id);
         if (!Types.ObjectId.isValid(userId)) return res.status(400).json({ message: "Invalid user id" });
 
-        const regs = await Registration.find({ user: userId }).populate("event").populate("user");
-        res.json(regs);
+        // Get query parameters
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const sortField = req.query.sort as string || 'createdAt';
+        const sortOrder = req.query.order as string === 'desc' ? -1 : 1;
+        const status = req.query.status as string;
+
+        // Build filter object
+        const filter: any = { user: userId };
+        if (status) {
+            filter.status = status;
+        }
+
+        // Build sort object
+        const sort: any = {};
+        sort[sortField] = sortOrder;
+
+        // Calculate skip value for pagination
+        const skip = (page - 1) * limit;
+
+        // Get total count for pagination metadata
+        const totalCount = await Registration.countDocuments(filter);
+
+        // Execute query with pagination, filtering and sorting
+        const registrations = await Registration.find(filter)
+            .populate("event")
+            .populate("user")
+            .sort(sort)
+            .skip(skip)
+            .limit(limit);
+
+        // Return response with pagination metadata
+        res.json({
+            data: registrations,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(totalCount / limit),
+                totalItems: totalCount,
+                itemsPerPage: limit,
+                hasNext: page < Math.ceil(totalCount / limit),
+                hasPrev: page > 1
+            }
+        });
     } catch (error) {
         next(error);
     }
@@ -49,6 +90,20 @@ export const getRegistrationById = async (req: Request, res: Response, next: Nex
         const reg = await Registration.findById(regId).populate("event").populate("user");
         if (!reg) return res.status(404).json({ message: "Registration not found" });
         res.json(reg);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const cancelRegistration = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const regId = String(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id);
+        if (!Types.ObjectId.isValid(regId)) return res.status(400).json({ message: "Invalid registration id" });
+
+        const reg = await Registration.findByIdAndDelete(regId);
+        if (!reg) return res.status(404).json({ message: "Registration not found" });
+        
+        res.json({ message: "Registration cancelled successfully" });
     } catch (error) {
         next(error);
     }

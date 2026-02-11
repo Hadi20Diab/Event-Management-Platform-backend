@@ -62,9 +62,12 @@ export const eventValidationRules = {
   get: [
     query("date").optional().isISO8601().withMessage("Date filter must be ISO 8601"),
     query("location").optional().isString().withMessage("Location filter must be a string"),
+    query("title").optional().isString().withMessage("Title filter must be a string"),
+    query("capacity").optional().isInt({ min: 1 }).withMessage("Capacity filter must be an integer >= 1"),
     query("status").optional().isIn(allowedStatuses as unknown as string[]).withMessage(`Status filter must be one of: ${allowedStatuses.join(", ")}`),
     
     query("sort").optional().isString().withMessage("Sort must be a string"),
+    query("order").optional().isIn(["asc", "desc"]).withMessage("Order must be 'asc' or 'desc'"),
     query("page").optional().isInt({ min: 1 }).withMessage("Page must be an integer >= 1"),
     query("limit").optional().isInt({ min: 1 }).withMessage("Limit must be an integer >= 1"),
   ],
