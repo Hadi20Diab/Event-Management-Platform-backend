@@ -1,10 +1,10 @@
 import { Router } from "express";
 import {
-    createAdmin,
-    getAdmins,
-    getAdminById,
-    updateAdmin,
-    deleteAdmin
+  createAdmin,
+  getAdmins,
+  getAdminById,
+  updateAdmin,
+  deleteAdmin,
 } from "../controllers/admin.controller";
 
 const router = Router();
