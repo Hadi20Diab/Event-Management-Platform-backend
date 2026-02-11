@@ -6,7 +6,7 @@ import {
   updateAdmin,
   deleteAdmin,
 } from "../controllers/admin.controller";
-import validate from "../middlewares/adminValidate.middleware";
+import validate from "../middlewares/validateRequest";
 import {
   createAdminValidator,
   updateAdminValidator,
