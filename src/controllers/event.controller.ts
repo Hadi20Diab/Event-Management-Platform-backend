@@ -16,10 +16,14 @@ export const createEvent = async (req: Request, res: Response, next: NextFunctio
 export const getEvents = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const q = req.query;
+    const includeRegistrations = (q.includeRegistrations as string | undefined) === "true";
     const dateQ = q.date as string | undefined;
     const locationQ = q.location as string | undefined;
     const statusQ = q.status as string | undefined;
-    const sortQ = q.sort as string | undefined;
+    const titleQ = q.title as string | undefined;
+    const capacityQ = q.capacity as string | undefined;
+    const sortQ = (q.sort as string | undefined) || "createdAt";
+    const orderQ = ((q.order as string | undefined) || "desc").toLowerCase();
     const page = Math.max(1, Number(q.page) || 1);
     const limit = Math.min(100, Math.max(1, Number(q.limit) || 10));
 
@@ -38,14 +42,19 @@ export const getEvents = async (req: Request, res: Response, next: NextFunction)
 
     if (locationQ) filter.location = { $regex: new RegExp(locationQ, "i") };
     if (statusQ) filter.status = statusQ;
+    if (titleQ) filter.title = { $regex: new RegExp(titleQ, "i") };
+    if (capacityQ) {
+      const c = Number(capacityQ);
+      if (!Number.isNaN(c)) filter.capacity = c;
+    }
 
 
     let mongoQuery = Event.find(filter);
-    if (sortQ) {
-      mongoQuery = mongoQuery.sort(sortQ);
-    } else {
-      mongoQuery = mongoQuery.sort("-date");
-    }
+    if (includeRegistrations) mongoQuery = mongoQuery.populate("registrations");
+    const sortOrder = orderQ === "asc" ? 1 : -1;
+    const sortObj: any = {};
+    sortObj[sortQ] = sortOrder;
+    mongoQuery = mongoQuery.sort(sortObj);
 
     const skip = (page - 1) * limit;
     mongoQuery = mongoQuery.skip(skip).limit(limit);
@@ -65,7 +74,10 @@ export const getEvents = async (req: Request, res: Response, next: NextFunction)
 
 export const getEventById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const event = await Event.findById(req.params.id);
+    const includeRegistrations = req.query.includeRegistrations === "true";
+    let query = Event.findById(req.params.id);
+    if (includeRegistrations) query = query.populate("registrations");
+    const event = await query.exec();
     if (!event) {
       res.status(404).json({ message: "Event not found" });
       return;

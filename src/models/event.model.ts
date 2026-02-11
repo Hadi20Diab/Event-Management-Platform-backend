@@ -20,8 +20,15 @@ const EventSchema = new Schema<EventDocument>(
     status: { type: String, enum: ["scheduled", "cancelled", "completed"], default: "scheduled" },
     capacity: { type: Number },
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
+
+// Virtual to expose registrations related to this event (Registration.event -> Event._id)
+EventSchema.virtual("registrations", {
+  ref: "Registration",
+  localField: "_id",
+  foreignField: "event",
+});
 
 const Event = mongoose.model<EventDocument>("Event", EventSchema);
 
