@@ -2,19 +2,6 @@ import { Request, Response, NextFunction } from "express";
 import User from "../models/user.model";
 import Registration from "../models/registration.model";
 
-export const createUser = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
-    try {
-        const user = await User.create(req.body);
-        res.status(201).json(user);
-    } catch (error) {
-        next(error);
-    }
-};
-
 export const getUsers = async (
     req: Request,
     res: Response,
