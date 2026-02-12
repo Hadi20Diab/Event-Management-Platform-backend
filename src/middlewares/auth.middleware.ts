@@ -74,3 +74,23 @@ export const superAdminOnly = (
 
   next();
 };
+
+// Allow the same admin (owner) or a superAdmin
+export const selfOrSuperAdmin = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const admin = (req as any).admin;
+  const targetId = String(req.params.id || "");
+
+  if (!admin) return res.status(401).json({ message: "Not authorized" });
+
+  // If requester is the target admin
+  if (admin._id && String(admin._id) === targetId) return next();
+
+  // Or if requester is a superAdmin
+  if (admin.role === "superAdmin") return next();
+
+  return res.status(403).json({ message: "Access denied" });
+};

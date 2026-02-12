@@ -12,7 +12,7 @@ import {
   updateAdminValidator,
   idValidator,
 } from "../validators/admin.validator";
-import { protect, adminOnly } from "../middlewares/auth.middleware";
+import { protect, adminOnly, superAdminOnly, selfOrSuperAdmin } from "../middlewares/auth.middleware";
 
 const router = Router();
 
@@ -25,9 +25,9 @@ router.post(
   createAdmin,
 );
 
-router.get("/", protect, adminOnly, getAdmins);
+router.get("/", protect, superAdminOnly, getAdmins);
 
-router.get("/:id", protect, adminOnly, idValidator, validate, getAdminById);
+router.get("/:id", protect, selfOrSuperAdmin, idValidator, validate, getAdminById);
 
 router.put(
   "/:id",
