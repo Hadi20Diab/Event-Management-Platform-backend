@@ -10,10 +10,15 @@ const errorHandler = (
     let status = 500;
     let payload: any = { message: "Internal Server Error" };
 
-    // Mongoose validation error
+    // Mongoose validation error -> return simple map of field -> message
     if (err && err.name === "ValidationError") {
         status = 400;
-        payload = { message: "Validation failed", details: err.errors };
+        const errors: Record<string, string> = {};
+        Object.keys(err.errors || {}).forEach((key: string) => {
+            const e = err.errors[key];
+            errors[key] = e && e.message ? e.message : String(e);
+        });
+        payload = { message: "Validation failed", errors };
     }
 
     // Mongoose cast error (invalid ObjectId)
