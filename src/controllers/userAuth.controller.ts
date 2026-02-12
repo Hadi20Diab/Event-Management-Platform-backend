@@ -6,20 +6,27 @@ import { generateToken } from "../utils/jwt";
 export const signupUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { name, email, password } = req.body;
-        if (!name || !email || !password) return res.status(400).json({ message: "name, email and password are required" });
+        if (!name || !email || !password || typeof password !== 'string' || !password.startsWith('$2')) {
+            return res.status(400).json({ message: 'name, email and bcrypt-hashed password are required' });
+        }
 
-        const existing = await User.findOne({ email }).select("+password");
-        if (existing && existing.password) return res.status(409).json({ message: "Email already registered" });
+        const existing = await User.findOne({ email }).select('+password');
+        if (existing && existing.password) {
+            // If existing user already has a bcrypt password, treat as conflict
+            if (existing.password.startsWith('$2')) return res.status(409).json({ message: 'Email already registered' });
+            // Existing user has legacy plaintext password — reject and prompt migration
+            return res.status(400).json({ message: 'Existing account uses legacy plaintext password; please re-register or contact support' });
+        }
 
-        const hashed = await bcrypt.hash(password, 10);
+        const passwordToStore = password;
 
         let user;
         if (existing) {
-            existing.password = hashed;
+            existing.password = passwordToStore;
             await existing.save();
             user = existing;
         } else {
-            user = await User.create({ name, email, password: hashed });
+            user = await User.create({ name, email, password: passwordToStore });
         }
 
         const token = generateToken(user._id.toString(), "user");
@@ -36,15 +43,20 @@ export const signupUser = async (req: Request, res: Response, next: NextFunction
 export const signinUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { email, password } = req.body;
-        if (!email || !password) return res.status(400).json({ message: "email and password are required" });
+        if (!email || !password || typeof password !== 'string' || !password.startsWith('$2')) {
+            return res.status(400).json({ message: 'email and bcrypt-hashed password are required' });
+        }
 
-        const user = await User.findOne({ email }).select("+password");
-        if (!user || !user.password) return res.status(400).json({ message: "Invalid credentials" });
+        const user = await User.findOne({ email }).select('+password');
+        if (!user || !user.password) return res.status(400).json({ message: 'Invalid credentials' });
 
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
+        if (!user.password.startsWith('$2')) {
+            return res.status(400).json({ message: 'Account uses legacy plaintext password; please re-register or contact support' });
+        }
 
-        const token = generateToken(user._id.toString(), "user");
+        if (password !== user.password) return res.status(400).json({ message: 'Invalid credentials' });
+
+        const token = generateToken(user._id.toString(), 'user');
         res.json({
             message: "Login successful",
             token,
