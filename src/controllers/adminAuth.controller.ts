@@ -47,7 +47,7 @@ export const adminLogin = async (
     const admin = await Admin.findOne({ email }).select("+password");
 
     if (!admin) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(400).json({ message: "Admin Not Found" });
     }
 
     const isMatch = await bcrypt.compare(password, admin.password);
