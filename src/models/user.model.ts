@@ -1,43 +1,17 @@
 import { Schema, model, Document } from "mongoose";
 
 export interface IUser extends Document {
-  username: string;
+  name: string;
   email: string;
-  phoneNumber: string;
-  address:string;
+  password?: string;
+  role?: string;
 }
-
 const userSchema = new Schema<IUser>(
   {
-    username: {
-      type: String,
-      required: [true, "Username is required"],
-      unique: true,
-      trim: true,
-    },
-
-    email: {
-      type: String,
-      required: [true, "Email is required"],
-      unique: true,
-      lowercase: true,
-      trim: true,
-      match: [
-        /^[a-zA-Z0-9._%+-]+@gmail\.com$/,
-        "Email must be a valid @gmail.com address",
-      ],
-    },
-
-    phoneNumber: {
-      type: String,
-      required: [true, "Phone number is required"],
-      unique: true,
-    
-    },
-      address: {
-      type: String,
-       
-    },
+    name: { type: String, required: true, trim: true },
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    password: { type: String, required: false, select: false },
+    role: { type: String, enum: ["user", "admin"], default: "user" }
   },
   { timestamps: true }
 );
