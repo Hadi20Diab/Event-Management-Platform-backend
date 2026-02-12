@@ -48,7 +48,8 @@ export const signinUser = async (req: Request, res: Response, next: NextFunction
         }
 
         const user = await User.findOne({ email }).select('+password');
-        if (!user || !user.password) return res.status(400).json({ message: 'Invalid credentials' });
+        if (!user) return res.status(400).json({ message: 'User not found' });
+        if (!user.password) return res.status(400).json({ message: 'No password set for this account; contact support' });
 
         if (!user.password.startsWith('$2')) {
             return res.status(400).json({ message: 'Account uses legacy plaintext password; please re-register or contact support' });
