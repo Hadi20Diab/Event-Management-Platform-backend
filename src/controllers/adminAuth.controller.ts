@@ -61,6 +61,7 @@ export const adminLogin = async (
     res.json({
       message: "Login successful",
       token,
+      admin: { id: admin._id.toString(), name: admin.name, email: admin.email, role: admin.role },
     });
   } catch (error) {
     next(error);

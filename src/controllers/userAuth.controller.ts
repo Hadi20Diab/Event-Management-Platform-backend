@@ -23,7 +23,11 @@ export const signupUser = async (req: Request, res: Response, next: NextFunction
         }
 
         const token = generateToken(user._id.toString(), "user");
-        res.status(201).json({ message: "Signup successful", token });
+        res.status(201).json({
+            message: "Signup successful",
+            token,
+            user: { id: user._id.toString(), name: user.name, email: user.email, role: 'user' }
+        });
     } catch (error) {
         next(error);
     }
@@ -41,7 +45,11 @@ export const signinUser = async (req: Request, res: Response, next: NextFunction
         if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
         const token = generateToken(user._id.toString(), "user");
-        res.json({ message: "Login successful", token });
+        res.json({
+            message: "Login successful",
+            token,
+            user: { id: user._id.toString(), name: user.name, email: user.email, role: 'user' }
+        });
     } catch (error) {
         next(error);
     }
