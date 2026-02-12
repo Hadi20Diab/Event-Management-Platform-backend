@@ -49,11 +49,17 @@ export const adminLogin = async (
     if (!admin) {
       return res.status(400).json({ message: "Admin Not Found" });
     }
-
     const isMatch = await bcrypt.compare(password, admin.password);
-
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      // legacy case: admin.password stored in DB as plaintext
+      if (admin.password === password) {
+        // migrate to hashed password
+        const hashed = await bcrypt.hash(password, 10);
+        admin.password = hashed;
+        await admin.save();
+      } else {
+        return res.status(400).json({ message: "Invalid credentials" });
+      }
     }
 
     const token = generateToken(admin._id.toString(), admin.role);
