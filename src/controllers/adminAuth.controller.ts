@@ -19,11 +19,16 @@ export const addNewAdmin = async (
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Accept already-hashed password (frontend may send bcrypt hash)
+    const passwordToStore = typeof password === 'string' && password.startsWith('$2')
+      ? password
+      : await bcrypt.hash(password, 10);
+
     const admin = await Admin.create({
       name,
       email,
       phone,
-      password: hashedPassword,
+      password: passwordToStore,
       role,
     });
 
@@ -69,6 +74,18 @@ export const adminLogin = async (
       token,
       admin: { id: admin._id.toString(), name: admin.name, email: admin.email, role: admin.role },
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// PUBLIC: return bcrypt hash for a given plaintext password (testing helper)
+export const hashPassword = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { password } = req.body;
+    if (!password || typeof password !== 'string') return res.status(400).json({ message: 'password is required' });
+    const hash = await bcrypt.hash(password, 10);
+    res.json({ hash });
   } catch (error) {
     next(error);
   }
