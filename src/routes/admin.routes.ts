@@ -4,6 +4,7 @@ import {
   getAdmins,
   getAdminById,
   updateAdmin,
+  updateAdminRole,
   deleteAdmin,
 } from "../controllers/admin.controller";
 import validate from "../middlewares/validateRequest";
@@ -12,7 +13,7 @@ import {
   updateAdminValidator,
   idValidator,
 } from "../validators/admin.validator";
-import { protect, adminOnly, superAdminOnly, selfOrSuperAdmin } from "../middlewares/auth.middleware";
+import { protect, adminOnly, superAdminOnly, selfOrSuperAdmin, selfOnly } from "../middlewares/auth.middleware";
 
 const router = Router();
 
@@ -32,10 +33,20 @@ router.get("/:id", protect, selfOrSuperAdmin, idValidator, validate, getAdminByI
 router.put(
   "/:id",
   protect,
-  adminOnly,
+  selfOnly,
   updateAdminValidator,
   validate,
   updateAdmin,
+);
+
+// SuperAdmin-only: update role
+router.put(
+  "/:id/role",
+  protect,
+  superAdminOnly,
+  idValidator,
+  validate,
+  updateAdminRole,
 );
 
 router.delete("/:id", protect, adminOnly, idValidator, validate, deleteAdmin);

@@ -93,7 +93,7 @@ export const getAdminById = async (
       res.status(404).json({ message: "Admin not found" });
       return;
     }
-    console.log(`Account is found`);
+
     res.json({
       message: `This is ${admin.name} account.`,
       admin,
@@ -111,6 +111,12 @@ export const updateAdmin = async (
   try {
     const updates: any = { ...req.body };
 
+    // Prevent role changes via this endpoint — role can only be changed
+    // through the superAdmin-only role-update endpoint.
+    if (typeof updates.role !== 'undefined') {
+      return res.status(403).json({ message: 'Role cannot be changed via this endpoint' });
+    }
+
     if (updates.password) {
       updates.password = await bcrypt.hash(updates.password, 10);
     }
@@ -119,16 +125,37 @@ export const updateAdmin = async (
       new: true,
       runValidators: true,
     }).select("-password");
+
     if (!admin) {
-      return res.status(404).json({
-        message: "Admin not found",
-      });
+      return res.status(404).json({ message: "Admin not found" });
     }
-    res.json({
-      message: `${admin.name} account updated successfully!`,
-      admin,
-    });
+
+    res.json({ message: `${admin.name} account updated successfully!`, admin });
     console.log("Admin is updated successfully!");
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateAdminRole = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { role } = req.body;
+    const allowedRoles = ["admin", "superAdmin"];
+    if (!role || typeof role !== "string" || !allowedRoles.includes(role)) {
+      return res.status(400).json({ message: "Invalid role" });
+    }
+
+    const admin = await Admin.findById(req.params.id).select("-password");
+    if (!admin) return res.status(404).json({ message: "Admin not found" });
+
+    admin.role = role as "admin" | "superAdmin";
+    await admin.save();
+
+    res.json({ message: `${admin.name} role updated to ${role}`, admin });
   } catch (error) {
     next(error);
   }

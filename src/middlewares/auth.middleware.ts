@@ -94,3 +94,15 @@ export const selfOrSuperAdmin = (
 
   return res.status(403).json({ message: "Access denied" });
 };
+
+// Allow only the same admin (owner)
+export const selfOnly = (req: Request, res: Response, next: NextFunction) => {
+  const admin = (req as any).admin;
+  const targetId = String(req.params.id || "");
+
+  if (!admin) return res.status(401).json({ message: "Not authorized" });
+
+  if (admin._id && String(admin._id) === targetId) return next();
+
+  return res.status(403).json({ message: "Access denied" });
+};
