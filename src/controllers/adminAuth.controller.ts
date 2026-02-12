@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import Admin from "../models/admin.model";
 import { generateToken } from "../utils/jwt";
 

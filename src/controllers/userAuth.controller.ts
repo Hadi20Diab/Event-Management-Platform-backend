@@ -16,14 +16,13 @@ export const signupUser = async (req: Request, res: Response, next: NextFunction
         let user;
         if (existing) {
             existing.password = hashed;
-            existing.role = existing.role || "user";
             await existing.save();
             user = existing;
         } else {
-            user = await User.create({ name, email, password: hashed, role: "user" });
+            user = await User.create({ name, email, password: hashed });
         }
 
-        const token = generateToken(user._id.toString(), user.role || "user");
+        const token = generateToken(user._id.toString(), "user");
         res.status(201).json({ message: "Signup successful", token });
     } catch (error) {
         next(error);
@@ -41,7 +40,7 @@ export const signinUser = async (req: Request, res: Response, next: NextFunction
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-        const token = generateToken(user._id.toString(), user.role || "user");
+        const token = generateToken(user._id.toString(), "user");
         res.json({ message: "Login successful", token });
     } catch (error) {
         next(error);
