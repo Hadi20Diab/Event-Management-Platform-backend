@@ -59,3 +59,18 @@ export const adminOnly = (
 
   next();
 };
+
+// Super-admin only
+export const superAdminOnly = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const admin = (req as any).admin;
+
+  if (!admin || admin.role !== "superAdmin") {
+    return res.status(403).json({ message: "Access denied - superAdmin only" });
+  }
+
+  next();
+};
