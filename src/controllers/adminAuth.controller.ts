@@ -5,7 +5,7 @@ import Admin from "../models/admin.model";
 import { generateToken } from "../utils/jwt";
 
 // REGISTER
-export const register = async (
+export const addNewAdmin = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -37,7 +37,7 @@ export const register = async (
 };
 
 // LOGIN
-export const login = async (
+export const adminLogin = async (
   req: Request,
   res: Response,
   next: NextFunction
