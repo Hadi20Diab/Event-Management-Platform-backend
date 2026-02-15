@@ -1,6 +1,5 @@
 import { Router } from "express";
 import {
-  createAdmin,
   getAdmins,
   getAdminById,
   updateAdmin,
@@ -9,31 +8,32 @@ import {
 } from "../controllers/admin.controller";
 import validate from "../middlewares/validateRequest";
 import {
-  createAdminValidator,
   updateAdminValidator,
   idValidator,
 } from "../validators/admin.validator";
-import { protect, adminOnly, superAdminOnly, selfOrSuperAdmin, selfOnly } from "../middlewares/auth.middleware";
+import {
+  authenticate,
+  superAdminOnly,
+  authorizeSelfOrSuperAdmin,
+} from "../middlewares/auth.middleware";
 
 const router = Router();
 
-router.post(
-  "/",
-  protect,
-  adminOnly,
-  createAdminValidator,
+router.get("/", authenticate, superAdminOnly, getAdmins);
+
+router.get(
+  "/:id",
+  authenticate,
+  authorizeSelfOrSuperAdmin,
+  idValidator,
   validate,
-  createAdmin,
+  getAdminById,
 );
-
-router.get("/", protect, superAdminOnly, getAdmins);
-
-router.get("/:id", protect, selfOrSuperAdmin, idValidator, validate, getAdminById);
 
 router.put(
   "/:id",
-  protect,
-  selfOnly,
+  authenticate,
+  authorizeSelfOrSuperAdmin,
   updateAdminValidator,
   validate,
   updateAdmin,
@@ -42,13 +42,20 @@ router.put(
 // SuperAdmin-only: update role
 router.put(
   "/:id/role",
-  protect,
+  authenticate,
   superAdminOnly,
   idValidator,
   validate,
   updateAdminRole,
 );
 
-router.delete("/:id", protect, selfOrSuperAdmin, idValidator, validate, deleteAdmin);
+router.delete(
+  "/:id",
+  authenticate,
+  authorizeSelfOrSuperAdmin,
+  idValidator,
+  validate,
+  deleteAdmin,
+);
 
 export default router;
