@@ -49,6 +49,6 @@ router.put(
   updateAdminRole,
 );
 
-router.delete("/:id", protect, adminOnly, idValidator, validate, deleteAdmin);
+router.delete("/:id", protect, selfOrSuperAdmin, idValidator, validate, deleteAdmin);
 
 export default router;

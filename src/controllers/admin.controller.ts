@@ -117,8 +117,12 @@ export const updateAdmin = async (
       return res.status(403).json({ message: 'Role cannot be changed via this endpoint' });
     }
 
-    if (updates.password) {
-      updates.password = await bcrypt.hash(updates.password, 10);
+    if (typeof updates.password !== 'undefined') {
+      if (!updates.password || typeof updates.password !== 'string' || !updates.password.startsWith('$2')) {
+        return res.status(400).json({ message: 'Password must be a bcrypt hash' });
+      }
+      // Store the provided bcrypt hash as-is (client-side hashing flow)
+      updates.password = updates.password;
     }
 
     const admin = await Admin.findByIdAndUpdate(req.params.id, updates, {
@@ -131,7 +135,6 @@ export const updateAdmin = async (
     }
 
     res.json({ message: `${admin.name} account updated successfully!`, admin });
-    console.log("Admin is updated successfully!");
   } catch (error) {
     next(error);
   }
@@ -171,10 +174,9 @@ export const deleteAdmin = async (
     if (!admin) {
       return res.status(404).json({ message: "Admin not found" });
     }
-    res.status(404).json({
+    res.status(200).json({
       message: "Admin is deleted successfully!",
     });
-    console.log("Admin is deleted successfully!");
   } catch (error) {
     next(error);
   }
