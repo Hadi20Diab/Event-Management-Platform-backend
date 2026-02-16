@@ -15,7 +15,12 @@ export const protect = async (
   try {
     let token;
 
-    if (
+    // Check cookie first (httpOnly cookie is more secure)
+    if (req.cookies && req.cookies.token) {
+      token = req.cookies.token;
+    }
+    // Fallback to Authorization header for backward compatibility
+    else if (
       req.headers.authorization &&
       req.headers.authorization.startsWith("Bearer")
     ) {

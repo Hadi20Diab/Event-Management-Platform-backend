@@ -9,12 +9,25 @@ interface TokenPayload {
 
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
     try {
-        const auth = req.headers.authorization;
-        if (!auth || !auth.startsWith("Bearer ")) {
+        let token;
+
+        // Check cookie first (httpOnly cookie is more secure)
+        if (req.cookies && req.cookies.token) {
+            token = req.cookies.token;
+        }
+        // Fallback to Authorization header for backward compatibility
+        else {
+            const auth = req.headers.authorization;
+            if (!auth || !auth.startsWith("Bearer ")) {
+                return res.status(401).json({ message: "Authorization token missing" });
+            }
+            token = auth.split(" ")[1];
+        }
+
+        if (!token) {
             return res.status(401).json({ message: "Authorization token missing" });
         }
 
-        const token = auth.split(" ")[1];
         const payload = verifyToken(token) as TokenPayload | null;
         if (!payload || !payload.id) return res.status(401).json({ message: "Invalid token" });
         if (!Types.ObjectId.isValid(payload.id)) return res.status(401).json({ message: "Invalid token id" });

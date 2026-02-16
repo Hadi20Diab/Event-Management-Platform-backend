@@ -11,6 +11,11 @@ router.post("/user/signin", signinUser);
 // Admin login alias
 router.post("/admin/login", adminLogin);
 router.post("/admin/register", protect, superAdminOnly, addNewAdmin);
+// Logout (clear cookie)
+router.post("/logout", (req, res) => {
+  res.clearCookie('token');
+  res.json({ message: 'Logged out successfully' });
+});
 // Public helper to get bcrypt hash (testing only)
 router.post("/hash-password", hashPassword);
 

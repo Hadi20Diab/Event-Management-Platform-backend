@@ -17,17 +17,17 @@ export const addNewAdmin = async (
       return res.status(400).json({ message: "Email already exists" });
     }
 
-    // Require the frontend to send a bcrypt hash (starts with "$2").
     if (!password || typeof password !== 'string') {
-      return res.status(400).json({ message: "Password is required and must be a bcrypt hash" });
+      return res.status(400).json({ message: "Password is required" });
     }
 
-    // bcrypt hashes begin with $2a, $2b, $2y, etc. Enforce this format.
-    if (!password.startsWith('$2')) {
-      return res.status(400).json({ message: "Password must be a bcrypt hash" });
+    // ONLY accept SHA256 hash (64 hex characters)
+    if (!/^[a-f0-9]{64}$/i.test(password)) {
+      return res.status(400).json({ message: 'Password must be a SHA256 hash (64 hex characters). Use /api/auth/hash-password to generate one for testing.' });
     }
 
-    const passwordToStore = password;
+    // Bcrypt the SHA256 hash for secure storage
+    const passwordToStore = await bcrypt.hash(password, 10);
 
     const admin = await Admin.create({
       name,
@@ -54,8 +54,13 @@ export const adminLogin = async (
   try {
     const { email, password } = req.body;
 
-    if (!email || !password || typeof password !== 'string' || !password.startsWith('$2')) {
-      return res.status(400).json({ message: 'email and bcrypt-hashed password are required' });
+    if (!email || !password || typeof password !== 'string') {
+      return res.status(400).json({ message: 'email and password are required' });
+    }
+
+    // ONLY accept SHA256 hash (64 hex characters)
+    if (!/^[a-f0-9]{64}$/i.test(password)) {
+      return res.status(400).json({ message: 'Password must be a SHA256 hash (64 hex characters). Use /api/auth/hash-password to generate one for testing.' });
     }
 
     const admin = await Admin.findOne({ email }).select('+password');
@@ -67,21 +72,24 @@ export const adminLogin = async (
       return res.status(400).json({ message: 'No password set for this admin; contact superAdmin' });
     }
 
-    // If stored password is legacy plaintext, reject and ask for migration.
-    if (!admin.password.startsWith('$2')) {
-      return res.status(400).json({ message: 'Admin account uses legacy plaintext password; contact superAdmin to reset' });
-    }
-
-    // Both provided and stored passwords are bcrypt hashes — compare directly.
-    if (password !== admin.password) {
+    // Compare SHA256 hash with bcrypted stored hash
+    const isValidPassword = await bcrypt.compare(password, admin.password);
+    if (!isValidPassword) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
     const token = generateToken(admin._id.toString(), admin.role);
 
+    // Set httpOnly cookie for security
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+
     res.json({
       message: 'Login successful',
-      token,
       admin: { id: admin._id.toString(), name: admin.name, email: admin.email, role: admin.role },
     });
   } catch (error) {
