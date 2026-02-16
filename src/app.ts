@@ -8,6 +8,7 @@ import eventRoutes from "./routes/event.routes";
 import registrationRoutes from "./routes/registration.routes";
 import authRoutes from "./routes/auth.routes";
 import dashboardRoutes from "./routes/dashboard.routes";
+import reportsRoutes from "./routes/reports.routes";
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use("/api/events", eventRoutes);
 app.use("/api/admins", adminRoutes);
 app.use("/api/register", registrationRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/reports", reportsRoutes);
 app.use(errorHandler);
 
 export default app;
