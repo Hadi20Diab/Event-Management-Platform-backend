@@ -1,4 +1,6 @@
 import express from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 import userRoutes from "./routes/user.routes";
 import errorHandler from "./middlewares/error.middleware";
 import adminRoutes from "./routes/admin.routes";
@@ -9,6 +11,15 @@ import authRoutes from "./routes/auth.routes";
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
+
+// Enable CORS for frontend (adjust origin as needed)
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || "http://localhost:3001",
+    credentials: true,
+  })
+);
 
 // Health check endpoint
 app.get("/", (req, res) => {
