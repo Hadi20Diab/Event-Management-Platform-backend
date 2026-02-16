@@ -12,21 +12,6 @@ export const addNewAdmin = async (
   try {
     const { name, email, phone, password, role } = req.body;
 
-    const missingFields = [];
-
-    if (!name) missingFields.push("name");
-    if (!email) missingFields.push("email");
-    if (!phone) missingFields.push("phone");
-    if (!password) missingFields.push("password");
-    if (!role) missingFields.push("role");
-
-    if (missingFields.length > 0) {
-      return res.status(400).json({
-        message: "Missing required fields",
-        missingFields,
-      });
-    }
-    
     const existingAdmin = await Admin.findOne({ email });
     if (existingAdmin) {
       return res.status(400).json({ message: "Email already exists" });

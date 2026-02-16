@@ -4,43 +4,18 @@ import {
   getEvents,
   getEventById,
   updateEvent,
-  deleteEvent,
+  deleteEvent
 } from "../controllers/event.controller";
-import { authenticate, authorizeAdmin } from "../middlewares/auth.middleware";
-
 import eventValidator from "../validators/event.validator";
 import validateRequest from "../middlewares/validateRequest";
+import { protect, adminOnly } from "../middlewares/auth.middleware";
 
 const router = Router();
 
-router.post(
-  "/",
-  authenticate,
-  authorizeAdmin,
-  eventValidator.create,
-  validateRequest,
-  createEvent,
-);
+router.post("/", protect, adminOnly, eventValidator.create, validateRequest, createEvent);
 router.get("/", eventValidator.get, validateRequest, getEvents);
 router.get("/:id", eventValidator.id, validateRequest, getEventById);
-
-router.put(
-  "/:id",
-  authenticate,
-  authorizeAdmin,
-  eventValidator.update,
-  eventValidator.id,
-  validateRequest,
-  updateEvent,
-);
-
-router.delete(
-  "/:id",
-  authenticate,
-  authorizeAdmin,
-  eventValidator.id,
-  validateRequest,
-  deleteEvent,
-);
+router.put("/:id", protect, adminOnly, eventValidator.update, eventValidator.id, validateRequest, updateEvent);
+router.delete("/:id", protect, adminOnly, eventValidator.id, validateRequest, deleteEvent);
 
 export default router;
