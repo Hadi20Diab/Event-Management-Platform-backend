@@ -1,6 +1,13 @@
 import { body, param, query } from "express-validator";
 
-const allowedStatuses = ["scheduled", "cancelled", "completed"] as const;
+const allowedStatuses = [
+  "active",
+  "upcoming",
+  "scheduled",
+  "cancelled",
+  "completed",
+  "sold-out",
+] as const;
 
 export const eventValidator = {
   create: [
