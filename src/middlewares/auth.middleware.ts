@@ -10,20 +10,14 @@ interface JwtPayload {
 export const protect = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
-    let token;
+    let token: string | undefined;
 
-    // Check cookie first (httpOnly cookie is more secure)
-    if (req.cookies && req.cookies.token) {
+    if (req.cookies?.token) {
       token = req.cookies.token;
-    }
-    // Fallback to Authorization header for backward compatibility
-    else if (
-      req.headers.authorization &&
-      req.headers.authorization.startsWith("Bearer")
-    ) {
+    } else if (req.headers.authorization?.startsWith("Bearer")) {
       token = req.headers.authorization.split(" ")[1];
     }
 
@@ -33,7 +27,7 @@ export const protect = async (
 
     const decoded = jwt.verify(
       token,
-      process.env.JWT_SECRET as string
+      process.env.JWT_SECRET as string,
     ) as JwtPayload;
 
     const admin = await Admin.findById(decoded.id);
@@ -46,16 +40,12 @@ export const protect = async (
 
     next();
   } catch (error) {
-    res.status(401).json({ message: "Not authorized" });
+    return res.status(401).json({ message: "Not authorized" });
   }
 };
 
 // ADMIN ONLY
-export const adminOnly = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const adminOnly = (req: Request, res: Response, next: NextFunction) => {
   const admin = (req as any).admin;
 
   if (!admin || (admin.role !== "admin" && admin.role !== "superAdmin")) {
@@ -69,7 +59,7 @@ export const adminOnly = (
 export const superAdminOnly = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const admin = (req as any).admin;
 
@@ -84,7 +74,7 @@ export const superAdminOnly = (
 export const selfOrSuperAdmin = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const admin = (req as any).admin;
   const targetId = String(req.params.id || "");
@@ -108,6 +98,8 @@ export const selfOnly = (req: Request, res: Response, next: NextFunction) => {
   if (!admin) return res.status(401).json({ message: "Not authorized" });
 
   if (admin._id && String(admin._id) === targetId) return next();
+console.log("Token admin id:", String(admin._id));
+console.log("Route param id:", targetId);
 
   return res.status(403).json({ message: "Access denied" });
 };

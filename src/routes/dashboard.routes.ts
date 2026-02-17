@@ -2,9 +2,11 @@ import { Router } from "express";
 import {
   getDashboardStats,
   getAdminStats,
-  getUserStats
+  getUserStats,
+  getUserDashboardStats
 } from "../controllers/dashboard.controller";
 import { protect, adminOnly, superAdminOnly } from "../middlewares/auth.middleware";
+import { authenticate } from "../middlewares/userAuth.middleware";
 
 const router = Router();
 
@@ -16,5 +18,8 @@ router.get("/admin-stats", protect, superAdminOnly, getAdminStats);
 
 // User statistics (admin only)
 router.get("/user-stats", protect, adminOnly, getUserStats);
+
+// User's own dashboard stats (authenticated users)
+router.get("/my-stats", authenticate, getUserDashboardStats);
 
 export default router;
