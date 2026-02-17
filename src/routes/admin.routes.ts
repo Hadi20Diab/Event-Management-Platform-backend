@@ -20,7 +20,7 @@ const router = Router();
 router.post(
   "/",
   protect,
-  adminOnly,
+  superAdminOnly,
   createAdminValidator,
   validate,
   createAdmin,
