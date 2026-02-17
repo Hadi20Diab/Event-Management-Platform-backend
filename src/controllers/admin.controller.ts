@@ -113,16 +113,21 @@ export const updateAdmin = async (
 
     // Prevent role changes via this endpoint — role can only be changed
     // through the superAdmin-only role-update endpoint.
-    if (typeof updates.role !== 'undefined') {
-      return res.status(403).json({ message: 'Role cannot be changed via this endpoint' });
+    if (typeof updates.role !== "undefined") {
+      return res
+        .status(403)
+        .json({ message: "Role cannot be changed via this endpoint" });
     }
 
-    if (typeof updates.password !== 'undefined') {
-      if (!updates.password || typeof updates.password !== 'string' || !updates.password.startsWith('$2')) {
-        return res.status(400).json({ message: 'Password must be a bcrypt hash' });
+    if (typeof updates.password !== "undefined") {
+      if (!updates.password || updates.password.length < 6) {
+        return res
+          .status(400)
+          .json({ message: "Password must be at least 6 characters" });
       }
-      // Store the provided bcrypt hash as-is (client-side hashing flow)
-      updates.password = updates.password;
+
+      const salt = await bcrypt.genSalt(10);
+      updates.password = await bcrypt.hash(updates.password, salt);
     }
 
     const admin = await Admin.findByIdAndUpdate(req.params.id, updates, {
