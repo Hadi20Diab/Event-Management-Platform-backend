@@ -162,3 +162,59 @@ export const getUserStats = async (
     next(error);
   }
 };
+
+export const getUserDashboardStats = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = (req as any).auth?.id;
+    if (!userId) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
+    // Get user's registration count
+    const userRegistrations = await Registration.countDocuments({ user: userId });
+    
+    // Get user's upcoming events
+    const upcomingRegistrations = await Registration.find({ user: userId })
+      .populate({
+        path: 'event',
+        match: { date: { $gte: new Date() } }
+      });
+    const upcomingEvents = upcomingRegistrations.filter(r => r.event).length;
+    
+    // Get total available events
+    const totalEvents = await Event.countDocuments();
+    
+    // Get user's recent registrations with event details
+    const recentRegistrations = await Registration.find({ user: userId })
+      .sort({ createdAt: -1 })
+      .limit(3)
+      .populate('event', 'title date category')
+      .lean();
+
+    const recentEvents = recentRegistrations.map(reg => ({
+      id: (reg.event as any)?._id,
+      title: (reg.event as any)?.title || 'Unknown Event',
+      date: (reg.event as any)?.date,
+      type: (reg.event as any)?.category || 'event',
+      registered: true
+    }));
+
+    res.json({
+      message: "User dashboard stats retrieved successfully",
+      data: {
+        stats: {
+          totalEvents,
+          registeredEvents: userRegistrations,
+          upcomingEvents
+        },
+        recentEvents
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
